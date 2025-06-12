@@ -1,0 +1,6 @@
+@SGRH.Mobile.Api_HostAddress = http://localhost:5177
+
+GET {{SGRH.Mobile.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

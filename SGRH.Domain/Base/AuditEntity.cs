@@ -7,15 +7,16 @@ using System.Threading.Tasks;
 
 namespace SGRH.Domain.Base
 {
-    public class AuditEntity
+    public abstract class AuditEntity 
     {
         protected AuditEntity()
         {
-            this.Status = true;
+            this.CreatedAt = DateTime.Now;
+            this.Deleted = false;
         }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public bool Status { get; set; }
+        public bool? Deleted { get; set; }
 
     }
 }

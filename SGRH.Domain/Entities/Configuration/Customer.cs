@@ -1,18 +1,18 @@
 ﻿using SGRH.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 
 namespace SGRH.Domain.Entities.Configuration
 {
-    public sealed class Customer : AuditEntity
+    [Table("Customers")]
+    public sealed class Customer : Person<int>
     {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        public string? PhoneNumber { get; set; }
+        [Key]
+        [Column("Id")]
+        public override int Id { set; get; } 
         public string? Address { get; set; }
+        public int ReservationId { get; set; }
+        public List<Reservation>? Reservations { get; set; }
     }
 }

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SGRH.Persistence\SGRH.Persistence.csproj" />
     <ProjectReference Include="..\sgrh.web.client\sgrh.web.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

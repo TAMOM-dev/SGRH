@@ -1,23 +1,21 @@
-﻿using SGRH.Domain.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SGRH.Domain.Entities.Configuration
 {
-    [Table("Rooms")]
-    public sealed class Room : Base.BaseEntity<int>
+    [Table("Floors")]
+    public sealed class Floor : Base.BaseEntity<int>
     {
         [Key]
-        [Column("RoomId")]
+        [Column("FloorId")]
         public override int Id { set; get; }
-        public string? RoomNumber { get; set; }
-        public RoomCategory? Category { get; set; }
-
+        public int FloorNumber { set; get; }
+        public int RoomId { set; get; }
+        public List<Room>? Rooms { set; get; }
     }
 }

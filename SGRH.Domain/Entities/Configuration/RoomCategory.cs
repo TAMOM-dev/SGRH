@@ -9,11 +9,27 @@ namespace SGRH.Domain.Entities.Configuration
     {
         [Key]
         [Column("CategoryId")]
-        public override int Id { set;  get; }
-        public string? Name { get; set; }
+        public override int Id { set; get; }
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; } = string.Empty;
+        [Required]
+        [StringLength(500)]
         public string? Description { get; set; }
+        [Required]
+        [Range(0.01, double.MaxValue)]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal NightlyRate { get; set; }
+        [Required]
+        [Range(0.01, 20)]
         public int MaxGuests { get; set; }
-        public List<Room>? Rooms { get; set; }
+
+        public bool HasBreakfast { get; set; }
+        public bool HasWifi { get; set; }
+        public bool HasParking { get; set; }
+        public bool HasPoolAccess { get; set; }
+
+        public ICollection<Room> Rooms { get; set; } = new List<Room>();
+
     }
 }

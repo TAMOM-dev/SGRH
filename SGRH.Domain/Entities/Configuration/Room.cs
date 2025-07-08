@@ -1,12 +1,7 @@
-﻿using SGRH.Domain.Base;
-using System;
-using System.Collections.Generic;
+﻿
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SGRH.Domain.Entities.Configuration
 {
@@ -17,6 +12,10 @@ namespace SGRH.Domain.Entities.Configuration
         [Column("RoomId")]
         public override int Id { set; get; }
         public string? RoomNumber { get; set; }
+        public int FloorId { get; set; }
+        public int CategoryId { get; set; }
+        public int MaxCapacity { get; set; }
+        public bool IsAvailable { get; set; }
         public RoomCategory? Category { get; set; }
 
     }

@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGRH.Domain\SGRH.Domain.csproj" />
+    <ProjectReference Include="..\SGRH.Model\SGRH.Model.csproj" />
+    <ProjectReference Include="..\SGRH.Persistence\SGRH.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

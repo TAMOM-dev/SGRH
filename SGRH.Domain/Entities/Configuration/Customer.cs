@@ -12,7 +12,6 @@ namespace SGRH.Domain.Entities.Configuration
         [Column("Id")]
         public override int Id { set; get; } 
         public string? Address { get; set; }
-        public int ReservationId { get; set; }
-        public List<Reservation>? Reservations { get; set; }
+        public ICollection<Reservation> Reservations { set; get; } = new List<Reservation>();
     }
 }

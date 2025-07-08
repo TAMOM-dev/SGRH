@@ -1,101 +1,155 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SGRH.Domain.Base;
-using SGRH.Domain.Repository;
+using SGRH.Persistence.Repository;
 using SGRH.Persistence.Context;
 using System.Linq.Expressions;
 
 namespace SGRH.Persistence.Base
 {
     public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
-    {
+    {  
         private readonly SGRHContext _context;
         private readonly ILogger _logger;
 
-        private DbSet<TEntity> Entity { get; set; }
+        protected DbSet<TEntity> Entity { get; private set; }
 
-        protected BaseRepository(SGRHContext context, ILogger logger)
+        protected BaseRepository(SGRHContext context)
         {
             _context = context;
-            _logger = logger;
             Entity = _context.Set<TEntity>();
         }
 
         public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> filter)
         {
-            return await Entity.AnyAsync(filter);
+
+            try
+            {
+                ValidationRepository.ValidateContext(_context, _logger);
+                ValidationRepository.ValidateFilter(filter, _logger);
+
+                return await Entity.AnyAsync(filter);
+            }
+            catch (Exception e)
+            {
+                ValidationRepository.LogError(_logger, $"Error checking existence: {e.Message}");
+                return false;
+            }
         }
 
         public virtual async Task<List<TEntity>> GetAllAsync()
         {
-            return await Entity.ToListAsync();
-        }
-
-        public virtual async Task<OperationResult> GetAllAsync(Expression<Func<TEntity, bool>> filter)
-        {
-            OperationResult result;
-
             try
             {
-                
-                var data = await Entity.Where(filter).ToListAsync();
+                ValidationRepository.ValidateContext(_context, _logger);
+                ValidationRepository.LogInformation(_logger, "Getting all entities");
 
-                result = OperationResult.Success("Entity found succesfully", data);
+                var data = await Entity.ToListAsync();
+                ValidationRepository.ValidateQuery(data, _logger, "Cannot found any entities");
 
-            } catch (Exception e)
+                return data;
+            }
+            catch (Exception e)
             {
-                result = OperationResult.Failure("Error finding Entity. :" + e.Message);
+                ValidationRepository.LogError(_logger, $"Error retrieving all entities: {e.Message}");
+                return new List<TEntity>();
+            }
+        }
+
+        public virtual async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> filter)
+        {
+            try
+            {
+                ValidationRepository.ValidateContext(_context, _logger);
+                ValidationRepository.ValidateFilter(filter, _logger);
+
+                return await Entity.Where(filter).ToListAsync();
+
+            }
+            catch (Exception e)
+            {
+                ValidationRepository.LogError(_logger, $"Error retrieving filtered entities: {e.Message}");
+                return new List<TEntity>();
             }
 
-            return result;
         }
 
-        public virtual async Task<TEntity> GetEntityByIdAsync(int id)
+        public virtual async Task<TEntity?> GetEntityByIdAsync(int id)
         {
-            ValidationRepository.ValidateID(id, _logger);
-            return await Entity.FindAsync(id); //OJO
-        }
-
-        public virtual async Task<OperationResult> SaveEntityAsync(TEntity entity)
-        {
-            OperationResult result;
-
             try
             {
-                ValidationRepository.ValidateEntity(entity,_logger, "The entity is actually Null");
+                ValidationRepository.ValidateID(id, _logger);
+                ValidationRepository.ValidateContext(_context, _logger);
+
+                return await Entity.FindAsync(id);
+            }
+            catch (Exception e)
+            {
+                ValidationRepository.LogError(_logger,$"Error retrieving entity {id}: {e.Message}");
+                return null;
+            }
+        }
+        public virtual async Task<OperationResult> SaveEntityAsync(TEntity entity)
+        {
+            try
+            {
+                ValidationRepository.ValidateEntity(entity, _logger, "The entity is actually Null");
 
                 Entity.Add(entity);
                 await _context.SaveChangesAsync();
 
-                result = OperationResult.Success("Entity saved correctly.", entity);
+                return OperationResult.Success("Entity saved correctly.", entity);
             }
             catch (Exception e)
             {
-                result = OperationResult.Failure("Error ocurred while saving the entity: " + e.Message);
+                ValidationRepository.LogError(_logger, "Error saving entity: " + e.Message);
+                return OperationResult.Failure("Error ocurred while saving the entity");
             }
-
-            return result;
         }
-
         public virtual async Task<OperationResult> UpdateEntityAsync(TEntity entity)
         {
-            OperationResult result; 
-
             try
             {
+                if (entity == null)
+                {
+                    ValidationRepository.LogError(_logger, "Entity Null");
+                    return OperationResult.Failure("Entity is actually Null");
+                }
 
                 Entity.Update(entity);
                 await _context.SaveChangesAsync();
-                result = OperationResult.Success("Entity updated correctly");
+
+                ValidationRepository.LogInformation(_logger, "Updated Successfully");
+                return OperationResult.Success("Entity updated correctly");
             }
             catch (Exception e)
             {
-                result = OperationResult.Failure("Error ocurred while updating the entity: " + e.Message);
+                ValidationRepository.LogError(_logger, "Error ocurred while updating the entity: " + e.Message);
+                return OperationResult.Failure("Error ocurred while updating the entity: " + e.Message);
+            }
+        }
+
+        public virtual async Task<OperationResult> DeleteEntityAsync(TEntity entity)
+        {
+            try
+            {
+                ValidationRepository.ValidateEntity(entity, _logger, "The entity is actually Null");
+
+                Entity.Remove(entity);
+                await _context.SaveChangesAsync();
+
+                ValidationRepository.LogInformation(_logger, "Deleted Successfully");
+                return OperationResult.Success("Entity deleted correctly");
+            }
+            catch (Exception e)
+            {
+                ValidationRepository.LogError(_logger, "Error deleting entity: " + e.Message);
+                return OperationResult.Failure("Error ocurred while deleting the entity");
             }
 
-            return result;
         }
+
     }
 
-
+    
 }

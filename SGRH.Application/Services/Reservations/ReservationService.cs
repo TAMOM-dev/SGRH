@@ -30,7 +30,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred finding the reservations: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error retrieving all reservations: {e.Message}");
+            return OperationResult.Failure("An error ocurred finding the reservations");
         }
 
     }
@@ -44,7 +45,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred finding the reservation: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error retrieving reservation {Id}: {e.Message}");
+            return OperationResult.Failure("An error ocurred finding the reservation");
         }
     }
 
@@ -57,7 +59,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred finding the reservations: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error retrieving reservations by customer id {customerId}: {e.Message}");
+            return OperationResult.Failure("An error ocurred finding the reservations");
         }
 
     }
@@ -71,7 +74,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred finding the reservations: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error retrieving reservations by floor id {floorId}: {e.Message}");
+            return OperationResult.Failure("An error ocurred finding the reservations");
         }
     }
 
@@ -87,7 +91,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred deleting the reservation: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error deleting reservation {dto.Id}: {e.Message}");
+            return OperationResult.Failure("An error ocurred deleting the reservation");
         }
     }
 
@@ -105,14 +110,13 @@ public sealed class ReservationService : IReservationService
                 return OperationResult.Failure("Check out date cannot be before check in date");
             }
 
-            
-
             var data = await _reservationRepository.SaveEntityAsync(dto.SaveReservationDtoToEntity());
             return OperationResult.Success("Reservation saved successfully", data);
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred saving the reservation: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error saving reservation: {e.Message}");
+            return OperationResult.Failure("An error ocurred saving the reservation");
         }
     }
 
@@ -125,7 +129,8 @@ public sealed class ReservationService : IReservationService
         }
         catch (Exception e)
         {
-            return OperationResult.Failure("An error ocurred updating the reservation: " + e.Message);
+            ValidationRepository.LogError(_logger, $"Error updating reservation: {e.Message}");
+            return OperationResult.Failure("An error ocurred updating the reservation");
         }
     }
 }

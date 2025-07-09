@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Extensions.Logging;
 using SGRH.Application.Dtos.RoomCategory;
 using SGRH.Application.Interfaces;
@@ -23,7 +22,7 @@ public sealed class RoomCategoryService : IRoomCategoryService
     public async Task<OperationResult> GetAll()
     {
         try
-        {
+        {   
             var categories = await _categoryRepository.GetAllAsync();
             var dtos = categories.RoomCategoriesToDto();
             return OperationResult.Success("Room categories found successfully", dtos);
@@ -77,6 +76,16 @@ public sealed class RoomCategoryService : IRoomCategoryService
     {
         try
         {
+            var nameExists = await _categoryRepository.ExistsAsync(c => c.Name == dto.Name);
+            if (nameExists){
+                return OperationResult.Failure("A room category with this name already exists");
+            }
+
+            if (dto.NightlyRate <= 0)
+            {
+                return OperationResult.Failure("Nightly rate must be a positive number");
+            }
+
             var category = dto.SaveRoomCategoryDtoToEntity();
             var result = await _categoryRepository.SaveEntityAsync(category);
             return OperationResult.Success("Room category saved successfully", category.RoomCategoryToDto());

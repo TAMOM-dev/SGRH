@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using SGRH.IOC.Dependencies;
+using SGRH.Persistence.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +11,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCustomerDependency();
 
-builder.Services.AddControllers();
+builder.Services.AddDbContext<SGRHContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddReservationDependency();
+builder.Services.AddCategoryDependency();
 
 var app = builder.Build();
 

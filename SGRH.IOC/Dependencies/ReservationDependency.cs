@@ -9,7 +9,7 @@ namespace SGRH.IOC.Dependencies
 {
     public static class ReservationDependency
     {
-        public static void AddCustomerDependency(this IServiceCollection service)
+        public static void AddReservationDependency(this IServiceCollection service)
         {
             service.AddScoped<IReservationRepository, ReservationRepository>();
             service.AddTransient<IReservationService, ReservationService>();

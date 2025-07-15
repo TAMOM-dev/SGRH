@@ -13,5 +13,5 @@ namespace SGRH.Domain.Entities.Configuration
         public override int Id { set; get; } 
         public string? Address { get; set; }
         public ICollection<Reservation> Reservations { set; get; } = new List<Reservation>();
-    }
+    };
 }

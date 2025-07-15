@@ -12,7 +12,6 @@ namespace SGRH.Domain.Entities.Configuration
         [Column("FloorId")]
         public override int Id { set; get; }
         public int FloorNumber { set; get; }
-        public int RoomId { set; get; }
-        public List<Room>? Rooms { set; get; }
+        public ICollection<Room>? Rooms { set; get; }
     }
 }

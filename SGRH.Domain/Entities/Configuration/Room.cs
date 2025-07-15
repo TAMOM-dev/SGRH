@@ -12,11 +12,18 @@ namespace SGRH.Domain.Entities.Configuration
         [Column("RoomId")]
         public override int Id { set; get; }
         public string? RoomNumber { get; set; }
+
+        [ForeignKey("Floor")]
         public int FloorId { get; set; }
+        public Floor? Floor { get; set; }
+
+        [ForeignKey("Category")]
         public int CategoryId { get; set; }
+        public RoomCategory? Category { get; set; }
+
+
         public int MaxCapacity { get; set; }
         public bool IsAvailable { get; set; }
-        public RoomCategory? Category { get; set; }
 
     }
 }

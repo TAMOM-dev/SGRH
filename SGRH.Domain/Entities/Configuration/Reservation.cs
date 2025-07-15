@@ -18,15 +18,20 @@ namespace SGRH.Domain.Entities.Configuration
         [Key]
         [Column("ReservationId")]
         public override int Id { get; set; }
+
+        [ForeignKey("Customer")]
         public int CustomerId { get; set; }
         public Customer? Customer { get; set; }
+
+        [ForeignKey("Room")]
         public int RoomId { get; set; }
         public Room? Room { get; set; }
-        public int FloorId { get; set; }
-        public Floor? Floor { get; set; }
+
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public int NumberOfGuests { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalCost { get; set; }
         public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
     }

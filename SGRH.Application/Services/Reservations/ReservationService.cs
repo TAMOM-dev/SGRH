@@ -62,18 +62,6 @@ public sealed class ReservationService : IReservationService
 
     }
 
-    public async Task<OperationResult> GetReservationsByFloorAsync(int floorId)
-    {
-        try
-        {
-            var data = await _reservationRepository.GetReservationsByFloorAsync(floorId);
-            return OperationResult.Success("Reservations found successfully", data);
-        }
-        catch (Exception e)
-        {
-            return OperationResult.Failure("An error ocurred finding the reservations: " + e.Message);
-        }
-    }
 
     public async Task<OperationResult> Remove(RemoveReservationDto dto)
     {

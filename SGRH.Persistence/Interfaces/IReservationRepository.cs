@@ -8,7 +8,7 @@ namespace SGRH.Persistence.Interfaces
     public interface IReservationRepository : IBaseRepository<Reservation>
     {
         Task<OperationResult> GetReservationsByCustomerId(int customerId);
-        Task<OperationResult> GetReservationsByFloorAsync(int floorId);
+        //Task<OperationResult> GetReservationsByFloorAsync(int floorId);
         Task<bool> HasReservationConflictAsync(
             int roomId,
             DateTime chaeckInDate,

@@ -41,27 +41,27 @@ namespace SGRH.Persistence.Repositories
             }
         }
 
-        public async Task<OperationResult> GetReservationsByFloorAsync(int floorId)
-        {
-            try
-            {
-                ValidationRepository.ValidateContext(_context, _logger);
-                ValidationRepository.ValidateID(floorId, _logger);
+        //public async Task<OperationResult> GetReservationsByFloorAsync(int floorId)
+        //{
+        //    try
+        //    {
+        //        ValidationRepository.ValidateContext(_context, _logger);
+        //        ValidationRepository.ValidateID(floorId, _logger);
 
-                var query = _context.Reservations.Where(r => r.FloorId == floorId);
-                var reservations = await query.ToListAsync();
+        //        var query = _context.Reservations.Where(r => r.FloorId == floorId);
+        //        var reservations = await query.ToListAsync();
 
-                ValidationRepository.ValidateQuery(reservations, _logger, "Cannot found a reservation with the floor id.");
-                return OperationResult.Success("Floor's reservations found", query);
+        //        ValidationRepository.ValidateQuery(reservations, _logger, "Cannot found a reservation with the floor id.");
+        //        return OperationResult.Success("Floor's reservations found", query);
 
-            }
+        //    }
 
-            catch (Exception e)
-            {
-                ValidationRepository.LogError(_logger, "Error finding reservations: " + e.Message);
-                return OperationResult.Failure("An error ocurred finding the floor's reservations");
-            }
-        }
+        //    catch (Exception e)
+        //    {
+        //        ValidationRepository.LogError(_logger, "Error finding reservations: " + e.Message);
+        //        return OperationResult.Failure("An error ocurred finding the floor's reservations");
+        //    }
+        //}
 
         public override Task<List<Reservation>> GetAllAsync()
         {

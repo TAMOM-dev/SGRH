@@ -8,7 +8,6 @@ namespace SGRH.Application.Interfaces
     public interface IReservationService : IBaseService<SaveReservationDto, UpdateReservationDto, RemoveReservationDto>
     {
         Task<OperationResult> GetReservationsByCustomerId(int customerId);
-        Task<OperationResult> GetReservationsByFloorAsync(int floorId);
     }
 }
 

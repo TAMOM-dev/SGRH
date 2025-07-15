@@ -12,7 +12,6 @@ public static class ReservationMapper
         {
             CustomerId = dto.CustomerId,
             RoomId = dto.RoomId,
-            FloorId = dto.FloorId,
             CheckInDate = dto.CheckInDate,
             CheckOutDate = dto.CheckOutDate,
             NumberOfGuests = dto.NumberOfGuests,
@@ -28,7 +27,6 @@ public static class ReservationMapper
             Id = dto.Id,
             CustomerId = dto.CustomerId,
             RoomId = dto.RoomId,
-            FloorId = dto.FloorId,
             CheckInDate = dto.CheckInDate,
             CheckOutDate = dto.CheckOutDate,
             NumberOfGuests = dto.NumberOfGuests,

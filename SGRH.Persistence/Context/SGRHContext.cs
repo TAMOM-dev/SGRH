@@ -12,6 +12,6 @@ namespace SGRH.Persistence.Context
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomCategory> RoomCategories { get; set; }
-        public DbSet<Floor> Floor { get; set; }
+        public DbSet<Floor> Floors { get; set; }
     }
 }

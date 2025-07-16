@@ -98,6 +98,7 @@ namespace SGRH.Persistence.Base
                 Entity.Add(entity);
                 await _context.SaveChangesAsync();
 
+                ValidationRepository.LogInformation(_logger, "Entity Saved.");
                 return OperationResult.Success("Entity saved correctly.", entity);
             }
             catch (Exception e)
@@ -110,11 +111,7 @@ namespace SGRH.Persistence.Base
         {
             try
             {
-                if (entity == null)
-                {
-                    ValidationRepository.LogError(_logger, "Entity Null");
-                    return OperationResult.Failure("Entity is actually Null");
-                }
+                ValidationRepository.ValidateEntity(entity, _logger, "The entity is actually Null");
 
                 Entity.Update(entity);
                 await _context.SaveChangesAsync();

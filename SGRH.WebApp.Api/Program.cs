@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SGRH.Application.Contracts.Services;
 using SGRH.Application.Services.Servicio;
-using SGRH.Infrastructure.Repositories;
-using SGRH.Infrastructure.Context;
+using SGRH.Infraestructure.Repositories;
+using SGRH.Infraestructure.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,11 +1,11 @@
-﻿using SGRH.Infrastructure.Context;
-using SGRH.Infrastructure.Entities;
+﻿using SGRH.Infraestructure.Context;
+using SGRH.Infraestructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SGRH.Infraestructure.Context;
 
-namespace SGRH.Infrastructure.Repositories
+namespace SGRH.Infraestructure.Repositories
 {
     public class ServicioRepository : IServicioRepository
     {

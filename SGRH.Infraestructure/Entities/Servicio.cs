@@ -1,4 +1,4 @@
-﻿namespace SGRH.Infrastructure.Entities
+﻿namespace SGRH.Infraestructure.Entities
 {
     public class Servicio
     {

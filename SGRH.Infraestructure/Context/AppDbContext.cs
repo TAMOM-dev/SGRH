@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SGRH.Infrastructure.Entities;
+using SGRH.Infraestructure.Entities;
 using System.Collections.Generic;
 
-namespace SGRH.Infrastructure.Context
+namespace SGRH.Infraestructure.Context
 {
     public class AppDbContext : DbContext
     {

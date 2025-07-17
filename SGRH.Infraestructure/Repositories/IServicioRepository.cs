@@ -1,8 +1,8 @@
-﻿using SGRH.Infrastructure.Entities;
+﻿using SGRH.Infraestructure.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SGRH.Infrastructure.Repositories
+namespace SGRH.Infraestructure.Repositories
 {
     public interface IServicioRepository
     {

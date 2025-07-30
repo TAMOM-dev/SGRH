@@ -3,6 +3,7 @@ using SGRH.Application.Dtos.RoomCategory;
 using SGRH.Application.Interfaces;
 using SGRH.Application.Mappers;
 using SGRH.Domain.Base;
+using SGRH.Domain.Entities.Configuration;
 using SGRH.Persistence.Base;
 using SGRH.Persistence.Interfaces;
 
@@ -24,7 +25,8 @@ public sealed class RoomCategoryService : IRoomCategoryService
         try
         {   
             var categories = await _categoryRepository.GetAllAsync();
-            var dtos = categories.RoomCategoriesToDto();
+            var dtos = RoomCategoryMapper.RoomCategoriesToDto(categories.Data);
+
             return OperationResult.Success("Room categories found successfully", dtos);
         }
         catch (Exception e)
@@ -38,8 +40,11 @@ public sealed class RoomCategoryService : IRoomCategoryService
     {
         try
         {
-            var category = await _categoryRepository.GetEntityByIdAsync(Id);
-            var dto = category.RoomCategoryToDto();
+            
+            var result = await _categoryRepository.GetEntityByIdAsync(Id);
+            var category = result.Data as RoomCategory;
+            var dto = RoomCategoryMapper.RoomCategoryToDto(category);
+
             return OperationResult.Success("Room category found successfully", dto);
         }
         catch (Exception e)
@@ -49,21 +54,18 @@ public sealed class RoomCategoryService : IRoomCategoryService
         }
     }
 
-    public async Task<OperationResult> Remove(RemoveRoomCategoryDto dto)
+    public async Task<OperationResult> Remove(int id)
     {
         try
         {
-            var category = await _categoryRepository.GetEntityByIdAsync(dto.Id);
-            if (category.Rooms?.Any() == true)
-                return OperationResult.Failure("Rooms associated with this category cannot be deleted");
+            var result = await _categoryRepository.GetEntityByIdAsync(id);
+            var category = result.Data as RoomCategory;
+            ValidationRepository.ValidateEntity(category, _logger, "Category doesn't exist");
 
-            var result = await _categoryRepository.DeleteEntityAsync(category);
-            ValidationRepository.LogInformation(_logger, "Deleted Successfully");
 
-            dto.Removed = true;
-            dto.ChangeDate = DateTime.UtcNow;
+            await _categoryRepository.DeleteEntityAsync(category);
 
-            return OperationResult.Success("Room category deleted successfully", dto);
+            return OperationResult.Success("Room category deleted successfully");
         }
         catch (Exception e)
         {
@@ -76,8 +78,14 @@ public sealed class RoomCategoryService : IRoomCategoryService
     {
         try
         {
+            var isBlank = ValidationRepository.ValidateStringEmpty(dto.Name, "Name", _logger);
+            if (!isBlank.isSuccess)
+            {
+                return isBlank;
+            }
+
             var nameExists = await _categoryRepository.ExistsAsync(c => c.Name == dto.Name);
-            if (nameExists){
+            if (nameExists.Data){
                 return OperationResult.Failure("A room category with this name already exists");
             }
 
@@ -92,8 +100,7 @@ public sealed class RoomCategoryService : IRoomCategoryService
         }
         catch (Exception e)
         {
-            ValidationRepository.LogError(_logger, $"Error saving room category: {e.Message}");
-            return OperationResult.Failure("An error ocurred saving the room category");
+            return OperationResult.Failure("An error ocurred saving the room category: " + e.Message);
         }
     }
 

@@ -4,6 +4,7 @@ using SGRH.Application.Dtos.Person.Reservation;
 using SGRH.Application.Interfaces;
 using SGRH.Application.Mappers;
 using SGRH.Domain.Base;
+using SGRH.Domain.Entities.Configuration;
 using SGRH.Persistence.Base;
 using SGRH.Persistence.Interfaces;
 
@@ -25,8 +26,11 @@ public sealed class ReservationService : IReservationService
 
         try
         {
-            var data = await _reservationRepository.GetAllAsync();
-            return OperationResult.Success("Reservations found successfully", data);
+            var result = await _reservationRepository.GetAllAsync();
+            var data = result.Data as List<Reservation>;
+            var dtos = ReservationMapper.ReservationToDtos(data);
+
+            return OperationResult.Success("Reservations found successfully", dtos);
         }
         catch (Exception e)
         {
@@ -39,8 +43,11 @@ public sealed class ReservationService : IReservationService
     {
         try
         {
-            var data = await _reservationRepository.GetEntityByIdAsync(Id);
-            return OperationResult.Success("Reservation found successfully", data);
+            var result = await _reservationRepository.GetEntityByIdAsync(Id);
+            var data = result.Data as Reservation;
+            var dto = ReservationMapper.ReservationToDto(data);
+
+            return OperationResult.Success("Reservation found successfully", dto);
         }
         catch (Exception e)
         {
@@ -53,7 +60,12 @@ public sealed class ReservationService : IReservationService
         try
         {
             var data = await _reservationRepository.GetReservationsByCustomerId(customerId);
-            return OperationResult.Success("Reservations found successfully", data);
+            var reservations = data.Data as List<Reservation>;
+            ValidationRepository.ValidateEntity(reservations, _logger, "There are no reservations for this customer");
+
+            var dtos = ReservationMapper.ReservationToDtos(reservations);
+
+            return OperationResult.Success("Reservations found successfully", dtos);
         }
         catch (Exception e)
         {
@@ -63,15 +75,13 @@ public sealed class ReservationService : IReservationService
     }
 
 
-    public async Task<OperationResult> Remove(RemoveReservationDto dto)
+    public async Task<OperationResult> Remove(int id)
     {
         try
         {
-            var entity = await _reservationRepository.GetEntityByIdAsync(dto.Id);
-            ValidationRepository.ValidateEntity(entity, _logger, "Reservation doesn't exist");
+            var entity = await _reservationRepository.GetEntityByIdAsync(id);
 
-            var data = await _reservationRepository.DeleteEntityAsync(entity);
-            return OperationResult.Success("Reservation deleted successfully", data);
+            return OperationResult.Success("Reservation deleted successfully");
         }
         catch (Exception e)
         {

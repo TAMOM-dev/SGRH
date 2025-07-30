@@ -13,12 +13,12 @@ namespace SGRH.Persistence.Repositories
     {
         private readonly SGRHContext _context;
         private readonly ILogger<ReservationRepository> _logger;
-        private readonly IConfiguration _configuration;
+        // private readonly IConfiguration _configuration;
 
-        public ReservationRepository(SGRHContext context) : base(context)
+        public ReservationRepository(SGRHContext context, ILogger<ReservationRepository> logger) : base(context)
         {
             _context = context;
-
+            _logger = logger;
         }
 
         public async Task<OperationResult> GetReservationsByCustomerId(int customerId)
@@ -63,24 +63,42 @@ namespace SGRH.Persistence.Repositories
         //    }
         //}
 
-        public override Task<List<Reservation>> GetAllAsync()
+        public override Task<OperationResult> GetAllAsync()
         {
-            return base.GetAllAsync();
+            ValidationRepository.ValidateContext(_context, _logger);
+            ValidationRepository.LogInformation(_logger, "Getting all reservations");
+            var reservations = base.GetAllAsync();
+
+            ValidationRepository.ValidateEntity(reservations.Result, _logger, "Cannot found a reservation");
+
+            return reservations;
         }
 
-        public override Task<Reservation> GetEntityByIdAsync(int id)
+        public override Task<OperationResult> GetEntityByIdAsync(int id)
         {
-            return base.GetEntityByIdAsync(id);
+            ValidationRepository.ValidateContext(_context, _logger);
+            ValidationRepository.ValidateID(id, _logger);
+
+            var reservation = base.GetEntityByIdAsync(id);
+            ValidationRepository.ValidateEntity(reservation.Result, _logger, "Cannot found a reservation");
+
+            return reservation;
         }
 
         public override Task<OperationResult> SaveEntityAsync(Reservation entity)
         {
+            ValidationRepository.ValidateContext(_context, _logger);
+            ValidationRepository.ValidateEntity(entity, _logger, "Cannot save a reservation");
+
             return base.SaveEntityAsync(entity);
         }
 
         public override Task<OperationResult> DeleteEntityAsync(Reservation entity)
 
         {
+            ValidationRepository.ValidateContext(_context, _logger);
+            ValidationRepository.ValidateEntity(entity, _logger, "Error deleting a reservation");
+
             return base.DeleteEntityAsync(entity);
         }
 

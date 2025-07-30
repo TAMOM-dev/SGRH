@@ -66,6 +66,30 @@ namespace SGRH.Persistence.Base
 
         }
 
+        public static OperationResult ValidateStringEmpty(string value, string fieldName, ILogger logger)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                LogError(logger, $"{fieldName} is empty");
+                return OperationResult.Failure($"Field {fieldName} cannot be empty");
+            }
+
+            LogInformation(logger, $"Field {fieldName} is valid");
+            return OperationResult.Success("Valid field", value);
+        }
+
+        public static OperationResult ValidatePositiveNumber(int value, string fieldName, ILogger logger)
+        {
+            if (value <= 0)
+            {
+                LogError(logger, $"Field {fieldName} must be a positive number");
+                return OperationResult.Failure("Invalid amount");
+            }
+
+            LogInformation(logger, $"{fieldName} is valid");
+            return OperationResult.Success("Valid field");
+        }
+
         // Looger
         public static void LogInformation(ILogger logger, string message)
         {

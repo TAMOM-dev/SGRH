@@ -4,6 +4,18 @@ using SGRH.Persistence.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -33,4 +45,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseCors("AllowFrontend");
+
 app.Run();
+

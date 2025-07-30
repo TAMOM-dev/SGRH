@@ -23,14 +23,12 @@ namespace SGRH.WebApp.Api.Controllers
         {
             var result = await _reservationService.GetAll();
 
-            if (result.isSuccess)
-            {
-                return Ok(result);
-            }
-            else
+            if (!result.isSuccess)
             {
                 return BadRequest(result);
             }
+            
+            return Ok(result);
         }
 
         // GET api/<ReservationController>/5
@@ -39,14 +37,12 @@ namespace SGRH.WebApp.Api.Controllers
         {
             var result = await _reservationService.GetById(id);
 
-            if (result.isSuccess)
-            {
-                return Ok(result);
-            }
-            else
+            if (!result.isSuccess)
             {
                 return BadRequest(result);
             }
+            
+            return Ok(result);
         }
 
         // POST api/<ReservationController>
@@ -55,14 +51,12 @@ namespace SGRH.WebApp.Api.Controllers
         {
             var result = await _reservationService.Save(dto);
 
-            if (result.isSuccess)
-            {
-                return Ok(result);
-            }
-            else
+            if (!result.isSuccess)
             {
                 return BadRequest(result);
             }
+            
+            return Ok(result);
         }
 
         // PUT api/<ReservationController>/5
@@ -70,21 +64,26 @@ namespace SGRH.WebApp.Api.Controllers
         public async Task<IActionResult> Put([FromBody] UpdateReservationDto dto)
         {
             var result = await _reservationService.Update(dto);
-            if (result.isSuccess)
-            {
-                return Ok(result);
-            }
-            else
+            if (!result.isSuccess)
             {
                 return BadRequest(result);
             }
+            
+            return Ok(result);
         }
 
         // DELETE api/<ReservationController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            
+            var result = await _reservationService.Remove(id);
+
+            if (!result.isSuccess)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }

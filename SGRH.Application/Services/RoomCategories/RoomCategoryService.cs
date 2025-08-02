@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SGRH.Application.Dtos.RoomCategory;
 using SGRH.Application.Interfaces;
@@ -14,108 +15,96 @@ public sealed class RoomCategoryService : IRoomCategoryService
 
     public readonly IRoomCategoryRepository _categoryRepository;
     private readonly ILogger<RoomCategoryService> _logger;
-    public RoomCategoryService(IRoomCategoryRepository roomCategoryRepository,
-                                ILogger<RoomCategoryService> logger)
+    private readonly IValidator<SaveRoomCategoryDto> _saveValidator;
+    private readonly IValidator<UpdateRoomCategoryDto> _updateValidator;
+    public RoomCategoryService(
+        IRoomCategoryRepository roomCategoryRepository,
+        ILogger<RoomCategoryService> logger,
+        IValidator<SaveRoomCategoryDto> saveValidator,
+        IValidator<UpdateRoomCategoryDto> updateValidator)
     {
         _categoryRepository = roomCategoryRepository;
         _logger = logger;
+        _saveValidator = saveValidator;
+        _updateValidator = updateValidator;
     }
     public async Task<OperationResult> GetAll()
-    {
-        try
-        {   
-            var categories = await _categoryRepository.GetAllAsync();
-            var dtos = RoomCategoryMapper.RoomCategoriesToDto(categories.Data);
+    {  
+        var repoResult = await _categoryRepository.GetAllAsync();
+        if(!repoResult.isSuccess)
+            return OperationResult.Failure("An error ocurred retrieving room categories");
 
-            return OperationResult.Success("Room categories found successfully", dtos);
-        }
-        catch (Exception e)
-        {
-            ValidationRepository.LogError(_logger, $"Error retrieving all categories: {e.Message}");
-            return OperationResult.Failure("An error ocurred finding the room categories");
-        }
+        var dtos = RoomCategoryMapper.RoomCategoriesToDto(repoResult.Data);
+        return OperationResult.Success("Room categories found successfully", dtos); 
     }
 
-    public async Task<OperationResult> GetById(int Id)
-    {
-        try
-        {
-            
-            var result = await _categoryRepository.GetEntityByIdAsync(Id);
-            var category = result.Data as RoomCategory;
-            var dto = RoomCategoryMapper.RoomCategoryToDto(category);
+    public async Task<OperationResult> GetById(int id)
+    {       
+            var repoResult = await _categoryRepository.GetEntityByIdAsync(id);
+            if(!repoResult.isSuccess)
+                return OperationResult.Failure("Room category not found");
 
+            var dto = RoomCategoryMapper.RoomCategoryToDto(repoResult.Data);
             return OperationResult.Success("Room category found successfully", dto);
-        }
-        catch (Exception e)
-        {
-           ValidationRepository.LogError(_logger, $"Error retrieving category {Id}: {e.Message}");
-            return OperationResult.Failure("An error ocurred finding the room category");
-        }
     }
 
     public async Task<OperationResult> Remove(int id)
     {
+        var repoResult = await _categoryRepository.GetEntityByIdAsync(id);
+        if(!repoResult.isSuccess)
+            return repoResult;
+
+        var category = repoResult.Data as RoomCategory;
+        if(category == null)
+            return OperationResult.Failure("Room category not found");
+        
         try
-        {
-            var result = await _categoryRepository.GetEntityByIdAsync(id);
-            var category = result.Data as RoomCategory;
-            ValidationRepository.ValidateEntity(category, _logger, "Category doesn't exist");
-
-
-            await _categoryRepository.DeleteEntityAsync(category);
-
-            return OperationResult.Success("Room category deleted successfully");
-        }
-        catch (Exception e)
-        {
-            ValidationRepository.LogError(_logger, $"Error deleting room category: {e.Message}");
-            return OperationResult.Failure("An error ocurred deleting the room category");
-        }
+            {
+              var deleteResult = await _categoryRepository.DeleteEntityAsync(category);
+              return deleteResult;
+            }
+            catch (Exception e)
+            {
+                return OperationResult.Failure("An error ocurred deleting the room category " + e.Message);
+            }
     }
 
     public async Task<OperationResult> Save(SaveRoomCategoryDto dto)
     {
-        try
-        {
-            var isBlank = ValidationRepository.ValidateStringEmpty(dto.Name, "Name", _logger);
-            if (!isBlank.isSuccess)
-            {
-                return isBlank;
-            }
+        var validResult = await _saveValidator.ValidateAsync(dto);
+        if (!validResult.IsValid)
+            return OperationResult.Failure("Validation failed: " + string.Join(", ", validResult.Errors.Select(e => e.ErrorMessage)));
+        
+        var categoryExists = await _categoryRepository.CategoryNameExistsAsync(dto.Name);
+        if (categoryExists)
+            return OperationResult.Failure("A room category with this name already exists");
+    
 
-            var nameExists = await _categoryRepository.ExistsAsync(c => c.Name == dto.Name);
-            if (nameExists.Data){
-                return OperationResult.Failure("A room category with this name already exists");
-            }
+        var category = dto.SaveRoomCategoryDtoToEntity();
+        var saveResult = await _categoryRepository.SaveEntityAsync(category);
 
-            if (dto.NightlyRate <= 0)
-            {
-                return OperationResult.Failure("Nightly rate must be a positive number");
-            }
-
-            var category = dto.SaveRoomCategoryDtoToEntity();
-            var result = await _categoryRepository.SaveEntityAsync(category);
-            return OperationResult.Success("Room category saved successfully", category.RoomCategoryToDto());
-        }
-        catch (Exception e)
-        {
-            return OperationResult.Failure("An error ocurred saving the room category: " + e.Message);
-        }
+        return saveResult.isSuccess
+            ? OperationResult.Success("Room category saved successfully", category.RoomCategoryToDto())
+            : OperationResult.Failure("An error ocurred saving the room category");
+       
     }
 
     public async Task<OperationResult> Update(UpdateRoomCategoryDto dto)
     {
-        try
-        {
-            var category = dto.UpdateRoomCategoryDtoToEntity();
-            var result =  await _categoryRepository.UpdateEntityAsync(category);
-            return OperationResult.Success("Room category updated successfully", result.Data?.RoomCategoryToDto());
-        }
-        catch (Exception e)
-        {
-            ValidationRepository.LogError(_logger, $"Error updating room category: {e.Message}");
-            return OperationResult.Failure("An error ocurred updating the room category");
-        }
+        var categoryExists = await _categoryRepository.GetEntityByIdAsync(dto.Id);
+        if(categoryExists.isSuccess )
+            return OperationResult.Failure("Room category not found");
+
+        var validResult = await _updateValidator.ValidateAsync(dto);
+        if (!validResult.IsValid)
+            return OperationResult.Failure("Validation failed: " + string.Join(", ", validResult.Errors.Select(e => e.ErrorMessage)));
+            
+        var category = dto.UpdateRoomCategoryDtoToEntity();
+        var updateResult = await _categoryRepository.UpdateEntityAsync(category);
+
+        return updateResult.isSuccess
+            ? OperationResult.Success("Room category updated successfully", category.RoomCategoryToDto())
+            : OperationResult.Failure("An error ocurred updating the room category");
     }
 }
+

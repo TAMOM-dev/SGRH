@@ -55,7 +55,8 @@ public static class RoomCategoryMapper
         };
     }
 
-    public static List<RoomCategoryDto> RoomCategoriesToDto(this List<RoomCategory> entities)
+    public static List<RoomCategoryDto> RoomCategoriesToDto(this List<RoomCategory> entities)  
+
     {
         return entities.Select(entity => entity.RoomCategoryToDto()).ToList();
     }

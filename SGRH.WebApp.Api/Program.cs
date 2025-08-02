@@ -29,7 +29,7 @@ builder.Services.AddDbContext<SGRHContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddReservationDependency();
+// builder.Services.AddReservationDependency();
 builder.Services.AddCategoryDependency();
 
 var app = builder.Build();

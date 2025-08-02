@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SGRH.Domain.Base;
 using SGRH.Domain.Entities.Configuration;
 using SGRH.Persistence.Base;
+using SGRH.Persistence.Base.Intefaces;
 using SGRH.Persistence.Context;
 using SGRH.Persistence.Interfaces;
 
@@ -12,120 +13,84 @@ namespace SGRH.Persistence.Repositories;
 public class RoomCategoryRepository : BaseRepository<RoomCategory>, IRoomCategoryRepository
 {
     private readonly SGRHContext _context;
-    private readonly ILogger<RoomCategoryRepository> _logger;
-    public RoomCategoryRepository(SGRHContext context, ILogger<RoomCategoryRepository> logger) : base(context)
+    protected readonly IValidationRepository _validator;
+    public RoomCategoryRepository(SGRHContext context, IValidationRepository validator) : base(context)
     {
         _context = context;
-        _logger = logger;
-    }
-    public async Task<IEnumerable<RoomCategory>> GetCategoriesWithRoomsAsync()
-    {
-        try
-        {
-            ValidationRepository.ValidateContext(_context, _logger);
-            ValidationRepository.LogInformation(_logger, "Getting all categories with rooms");
-
-            return await Entity
-                .Include(c => c.Rooms)
-                .ToListAsync();
-
-        }
-        catch (Exception e)
-        {
-            ValidationRepository.LogError(_logger, $"Error retrieving all categories with rooms: {e.Message}");
-            return new List<RoomCategory>();
-        }
+        _validator = validator;
     }
 
-    public async Task<bool> HasRoomCategoryNameAsync(int categoryId)
+    public override async Task<OperationResult> GetAllAsync()
     {
-        try
-        {
-            ValidationRepository.ValidateContext(_context, _logger);
-            ValidationRepository.ValidateID(categoryId, _logger);
+        _validator.ValidateContext(_context);
 
-            return await Entity
-                .Where(c => c.Id == categoryId)
-                .SelectMany(c => c.Rooms)
-                .AnyAsync();
-        }
-        catch (Exception e)
-        {
-            ValidationRepository.LogError(_logger, $"Error checking existence: {e.Message}");
-            return false;
-        }
+        var result = await base.GetAllAsync();
+        if(!result.isSuccess)
+            return OperationResult.Failure("Failed to retrieve categories.");
+
+        return OperationResult.Success("Categories retrieved successfully", result.Data);
     }
 
-    public override Task<OperationResult> GetAllAsync()
+    public override async Task<OperationResult> GetEntityByIdAsync(int id)
     {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.LogInformation(_logger, "Getting all categories");
+        _validator.ValidateContext(_context);
+        _validator.ValidateID(id);
 
-        var categories = base.GetAllAsync();
-        ValidationRepository.ValidateEntity(categories.Result, _logger, "Cannot found a category");
+        var result = await base.GetEntityByIdAsync(id);
+        if(!result.isSuccess || result.Data == null)
+            return OperationResult.Failure("Category not found.");
 
-        return categories;
+        return OperationResult.Success("Category retrieved successfully", result.Data);
     }
 
-    public override Task<OperationResult> GetEntityByIdAsync(int id)
-    {
+    public override async Task<OperationResult> SaveEntityAsync(RoomCategory entity)
+    {   
+        _validator.ValidateContext(_context);
+        _validator.ValidateEntity(entity, "The category cannot be null.");
 
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateID(id, _logger);
-        ValidationRepository.LogInformation(_logger, "Getting category...");
-
-        var category = base.GetEntityByIdAsync(id);
-        ValidationRepository.ValidateEntity(category.Result, _logger, "Cannot found a category");
-
-        return category;
+        await base.SaveEntityAsync(entity);
+        return OperationResult.Success("Category saved successfully.");
     }
 
-    public override Task<OperationResult> SaveEntityAsync(RoomCategory entity)
+    public override async Task<OperationResult> DeleteEntityAsync(RoomCategory entity)
     {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateEntity(entity, _logger, "Invalid category");
-
-        ValidationRepository.LogInformation(_logger, "Saving category...");
-        return base.SaveEntityAsync(entity);
-    }
-
-    public override Task<OperationResult> DeleteEntityAsync(RoomCategory entity)
-    {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateEntity(entity, _logger, "Cannot delete a category");
+        _validator.ValidateContext(_context);
+        _validator.ValidateEntity(entity, "The category cannot be null.");
         
-
-        ValidationRepository.LogInformation(_logger, "Deleting category...");
-        return base.DeleteEntityAsync(entity);
+        await base.DeleteEntityAsync(entity);
+        return OperationResult.Success("Category deleted successfully.");
     }
 
 
-    public override Task<OperationResult> ExistsAsync(Expression<Func<RoomCategory, bool>> filter)
+    public override async Task<OperationResult> ExistsAsync(Expression<Func<RoomCategory, bool>> filter)
     {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateFilter(filter, _logger);
-        
+        _validator.ValidateContext(_context);
+        _validator.ValidateFilter(filter);
 
-        return base.ExistsAsync(filter);
+        var exists = await base.ExistsAsync(filter);
+        return OperationResult.Success("Existence check completed.", exists);
     }
 
-    public override Task<OperationResult> GetAllAsync(Expression<Func<RoomCategory, bool>> filter)
+    public override async Task<OperationResult> GetAllAsync(Expression<Func<RoomCategory, bool>> filter)
     {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateFilter(filter, _logger);
+        _validator.ValidateContext(_context);
+        _validator.ValidateFilter(filter);
 
-        var categories = base.GetAllAsync(filter);
-        ValidationRepository.ValidateEntity(categories.Result, _logger, "Cannot found a category");
-
-        return categories;
+        var categories = await base.GetAllAsync(filter);
+        return OperationResult.Success("All categories retrieved successfully.", categories);
     }
 
-    public override Task<OperationResult> UpdateEntityAsync(RoomCategory entity)
+    public override async Task<OperationResult> UpdateEntityAsync(RoomCategory entity)
     {
-        ValidationRepository.ValidateContext(_context, _logger);
-        ValidationRepository.ValidateEntity(entity, _logger, "Cannot update a category");
+        _validator.ValidateContext(_context);
+        _validator.ValidateEntity(entity, "The category cannot be null.");
 
-        ValidationRepository.LogInformation(_logger, "Updating category...");
-        return base.UpdateEntityAsync(entity);
+        await base.UpdateEntityAsync(entity);
+        return OperationResult.Success("Category updated successsfully");
+    }
+
+    public async Task<bool> CategoryNameExistsAsync(string name)
+    {
+        return await Entity.AnyAsync(c => c.Name.ToLower() == name.ToLower());
     }
 }

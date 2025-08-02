@@ -6,6 +6,5 @@ namespace SGRH.Persistence.Interfaces;
 
 public interface IRoomCategoryRepository : IBaseRepository<RoomCategory>
 {
-    Task<bool> HasRoomCategoryNameAsync(int categoryId);
-    Task<IEnumerable<RoomCategory>> GetCategoriesWithRoomsAsync();
+    public Task<bool> CategoryNameExistsAsync(string name);
 }

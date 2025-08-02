@@ -3,6 +3,7 @@ using SGRH.Domain.Base;
 using SGRH.Persistence.Repository;
 using SGRH.Persistence.Context;
 using System.Linq.Expressions;
+using SGRH.Persistence.Base.Intefaces;
 
 namespace SGRH.Persistence.Base
 {
@@ -20,14 +21,16 @@ namespace SGRH.Persistence.Base
         public virtual async Task<OperationResult> ExistsAsync(Expression<Func<TEntity, bool>> filter)
         {
 
+            
             try
             {
+                
                 var data = await Entity.AnyAsync(filter);
                 return OperationResult.Success("Entity exists", data);
             }
             catch (Exception e)
             {
-                return  OperationResult.Failure("Error ocurred while checking if the entity exists: " + e.Message);
+                return OperationResult.Failure("Error ocurred while checking if the entity exists: " + e.Message);
             }
         }
 
